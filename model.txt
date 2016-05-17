@@ -1,10 +1,11 @@
 # Difference Between Two Rates
 model{
-   # Observed Counts
-   k1 ~ dbin(theta,n1)
-   k2 ~ dbin(theta,n2)
-   k3 ~ dbin(theta_prime, n3)
-   # Prior on Rates
-   theta ~ dbeta(1,1)
-   theta_prime ~ dbeta(1,1)
+   # Likelihood
+   k1 ~ dbin(theta1,n1)
+   k2 ~ dbin(theta2,n2)
+   k3 ~ dbin(theta3, n3)
+   # Prior
+   theta1 ~ dbeta(1,1)
+   theta2 ~ dbeta(1,1)
+   theta3 ~ dbeta(1,1)
 }
