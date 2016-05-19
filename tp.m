@@ -1,15 +1,20 @@
-
 %% TP
 
 clear;
+modelo = 1; %1 = primer model, 2 = modelo modificado
 
-%% Data (Observed Variables)
-k1 = 3;
-n1 = 10;
-k2 = 4;
-n2 = 10;
-k3 = 10;
-n3 = 10;
+modelo_txt = '';
+
+if modelo == 1
+    modelo_txt = 'model.txt';
+else
+    modelo_txt = 'model2.txt';
+end
+
+%%                                                                                                      Data (Observed Variables)
+k = [3, 4, 10];
+n = 10;
+m = 3; %cantidad de monedas
 
 %% Sampling
 % MCMC Parameters
@@ -20,13 +25,16 @@ nthin = 1; % How Often is a Sample Recorded?
 doparallel = 0; % Parallel Option
 
 % Assign Matlab Variables to the Observed Nodes
-datastruct = struct('k1',k1,'n1',n1,'k2',k2,'n2',n2,'k3',k3,'n3',n3);
+datastruct = struct('k', k, 'n', n, 'm', m);
 
 %Initialize Unobserved Variables
 for i=1:nchains
-    S.theta1 = 0.5; % An Initial Value for the Success Rate
-    S.theta2 = 0.5;
-    S.theta3 = 0.5;
+    if modelo == 1
+        S.c = 1/3;
+    else
+        S.c = round(rand(1,m));
+    end
+        
     init0(i) = S;
 end
 
@@ -36,14 +44,14 @@ tic
 fprintf( 'Running JAGS ...\n' );
 [samples, stats] = matjags( ...
 	datastruct, ...
-	fullfile(pwd, 'model.txt'), ...
+	fullfile(pwd, modelo_txt), ...
 	init0, ...
 	'doparallel' , doparallel, ...
 	'nchains', nchains,...
 	'nburnin', nburnin,...
 	'nsamples', nsamples, ...
 	'thin', nthin, ...
-	'monitorparams', {'theta1', 'theta2', 'theta3'}, ...
+	'monitorparams', {'c', 'theta'}, ...
 	'savejagsoutput' , 1 , ...
 	'verbosity' , 1 , ...
 	'cleanup' , 0 , ...
@@ -51,29 +59,21 @@ fprintf( 'Running JAGS ...\n' );
 toc
 
 %Grafico los resultados
+%separar para modelo 1 y 2
 
-theta1 = samples.theta1();
-theta2 = samples.theta2();
-theta3 = samples.theta3();
+theta1 = samples.theta(:,:,1);
+theta2 = samples.theta(:,:,2);
+theta3 = samples.theta(:,:,3);
+c = samples.c();
+ 
+a = ordinal(c, {'moneda 1', 'moneda 2', 'moneda 3'});
+histogram(a, 'Normalization', 'probability');
 
-histogram(theta1, 'Normalization', 'probability')
-hold on
-%histogram(theta2, 'Normalization', 'pdf')
-hold on
-%histogram(theta3, 'Normalization', 'pdf')
-% mean(theta1)
-% mean(theta2)
-% mean(theta3)
+% histogram(theta1, 'Normalization', 'probability');
+% hold on
+% histogram(theta2, 'Normalization', 'probability');
+% hold on
+% histogram(theta3, 'Normalization', 'probability')
 
+ 
 
-
-% 
-% figure(3);clf;hold on;
-% eps = .01; binsc = eps/2:eps:1-eps/2; binse = 0:eps:1;
-% count = histc(reshape(samples.theta,1,[]),binse);
-% count = count(1:end-1);
-% count = count/sum(count)/eps;
-% ph = plot(binsc,count,'k-');
-% set(gca,'box','on','fontsize',14,'xtick',[0:.2:1],'ytick',[1:ceil(max(get(gca,'ylim')))]);
-% xlabel('Rate','fontsize',16);
-% ylabel('Posterior Density','fontsize',16);
