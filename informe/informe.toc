@@ -1,2 +1,5 @@
 \select@language {spanish}
 \contentsline {section}{\numberline {1}Introducci\IeC {\'o}n}{3}{section.1}
+\contentsline {section}{\numberline {2}Problema 1: Modelo y Representaci\IeC {\'o}n Gr\IeC {\'a}fica}{3}{section.2}
+\contentsline {section}{\numberline {3}Problema 2: Implementaci\IeC {\'o}n e Inferencia}{4}{section.3}
+\contentsline {section}{\numberline {4}Problema 3: Modificaciones al Modelo}{8}{section.4}

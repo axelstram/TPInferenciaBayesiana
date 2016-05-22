@@ -1,7 +1,7 @@
 %% TP
 
 clear;
-modelo = 1; %1 = primer model, 2 = modelo modificado
+modelo = 2; %1 = primer model, 2 = modelo modificado
 
 modelo_txt = '';
 
@@ -11,17 +11,17 @@ else
     modelo_txt = 'model2.txt';
 end
 
-%%                                                                                                      Data (Observed Variables)
+%% Data (Observed Variables)
 k = [3, 4, 10];
 n = 10;
 m = 3; %cantidad de monedas
 
 %% Sampling
 % MCMC Parameters
-nchains = 1; % How Many Chains?
+nchains = 2; % How Many Chains?
 nburnin = 1e2; % How Many Burn-in Samples?
-nsamples = 5e4;  %How Many Recorded Samples?
-nthin = 1; % How Often is a Sample Recorded?
+nsamples = 5e3;  %How Many Recorded Samples?
+nthin = 2; % How Often is a Sample Recorded?
 doparallel = 0; % Parallel Option
 
 % Assign Matlab Variables to the Observed Nodes
@@ -59,21 +59,42 @@ fprintf( 'Running JAGS ...\n' );
 toc
 
 %Grafico los resultados
-%separar para modelo 1 y 2
 
 theta1 = samples.theta(:,:,1);
 theta2 = samples.theta(:,:,2);
 theta3 = samples.theta(:,:,3);
-c = samples.c();
- 
-a = ordinal(c, {'moneda 1', 'moneda 2', 'moneda 3'});
-histogram(a, 'Normalization', 'probability');
 
-% histogram(theta1, 'Normalization', 'probability');
-% hold on
-% histogram(theta2, 'Normalization', 'probability');
-% hold on
-% histogram(theta3, 'Normalization', 'probability')
+if modelo == 1
+    c = samples.c();
 
+    theta1 = theta1(:);
+    theta2 = theta2(:);
+    theta3 = theta3(:);
+    c = c(:);
+
+    %a = ordinal(c, {'moneda 1', 'moneda 2', 'moneda 3'});
+    %histogram(a, 'Normalization', 'pdf');
+
+    % histogram(theta1, 'Normalization', 'pdf');
+    % hold on
+    % histogram(theta2, 'Normalization', 'pdf');
+    % hold on
+    % histogram(theta3, 'Normalization', 'pdf');
+else
+    c1 = samples.c(:,:,1);
+    c2 = samples.c(:,:,2);
+    c3 = samples.c(:,:,3);
+    
+    c1 = c1(:);
+    c2 = c2(:);
+    c3 = c3(:);
+    
+%    histogram(c1, 'Normalization', 'pdf');
+%     hold on
+%     histogram(c2, 'Normalization', 'pdf');
+%     hold on
+%     histogram(c3, 'Normalization', 'pdf');
+%     hold on
+end
  
 

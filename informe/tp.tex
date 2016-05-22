@@ -1,3 +1,164 @@
 \section{Introducción}
 
-asdsad
+El objetivo de este Trabajo Práctico es simular
+
+\section{Problema 1: Modelo y Representación Gráfica}
+
+\textbf{Escriba un modelo que capture el problema enunciado. Realice una representación gráfica del modelo propuesto, utilizando la convención para identificar
+nodos latentes, observados y deterministicos.}
+
+
+%IMAGEN
+\begin{minipage}[t]{\dimexpr\linewidth-5.5cm\relax}
+    \raggedleft\raisebox{\dimexpr 0.6\baselineskip-\height}{
+    \includegraphics[width=\textwidth]{imagenes/modelo1.jpg}}
+    \captionof{figure}{\texttt{modelo 1}}
+\end{minipage}\hfill
+%TEXTO AL LADO
+\begin{minipage}[t]{0.7\textwidth}
+  \begin{flushleft}
+  \large
+    ~\\
+    $\Psi \; {\raise.17ex\hbox{$\scriptstyle\sim$}} \; Beta(1000, 1000)$\vspace*{0.3cm} \\
+    $\Phi \; {\raise.17ex\hbox{$\scriptstyle\sim$}} \; Beta(1,1)$\vspace*{0.3cm} \\
+    $\Theta_{i} = \left\{
+	  \begin{array}{ll}
+		  \Phi  & \mbox{si } c = i \\
+		  \Psi & \mbox{si } c \neq i
+	  \end{array}
+    \right.$\vspace*{0.3cm} \\
+    $C \; {\raise.17ex\hbox{$\scriptstyle\sim$}} \; Categorical(1/3,1/3,1/3)$\vspace*{0.3cm} \\
+    $K_{i} \; {\raise.17ex\hbox{$\scriptstyle\sim$}} \; Binomial(n, \theta_{i})$  
+  \end{flushleft}  
+\end{minipage}
+
+~\\ \\
+
+Donde $\Phi$ representa el prior de la moneda cargada (Uniforme(0,1) ya que no se sabe cómo esta cargada) y $\Psi$ el prior para las monedas no cargadas, el cual elegí representarlo
+como una Beta(1000, 1000), para que la función esté lo más concentrada posible alrededor de $1/2$, como se puede observar en la Figura 2. Por último, $\Theta_{i}$ es igual a $\Phi$ o $\Psi$ según
+el resultado de la categórica $C$, que decide cuál de las 3 monedas es la cargada, y $K_{i}$ es la binomial que representa la cantidad de caras obtenidas por cada moneda luego de 10 tiradas.
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.5\textwidth]{imagenes/beta-1000-1000.jpg}
+  \caption{Beta(1000,1000)}
+\end{figure}
+
+
+\newpage
+\section{Problema 2: Implementación e Inferencia}
+
+\textbf{Implemente el modelo en su sistema de inferencia predilecto, y obtenga muestras de la posterior para las variables relevantes. Explicite cuáles fueron los parámetros
+elegidos para el algoritmo de muestreo.}
+
+\begin{itemize}
+ \item \textbf{\textit{Realice histogramas de las distintas variables, utilizando un mismo gráfico cuando sea posible/razonable.}}
+ \item \textbf{\textit{Reporte la media y el desvío estándar para todas las variables inferidas.}}
+ \item \textbf{\textit{Compute la probabilidad a posteriori de que cada una de las monedas sea la moneda cargada.}}
+\end{itemize}
+
+
+Para implementar este modelo utilizé \textit{MatJAGS} junto con Matlab R2016a. Las variables relevantes a muestrear son $C$ (qué moneda es la cargada) y los distintos $\Theta$ (la probabilidad
+de salir cara de cada moneda). Los parámetros para el algoritmo de muestreo son: 
+
+\begin{itemize}
+ \item \textit{nchains = 2} (cantidad de cadenas)
+ \item \textit{nburnin = 100} (burn-in examples)
+ \item \textit{nsamples = 5000} (cant. de samples)
+ \item \textit{thin = 2} (cada cuánto sampleo)
+\end{itemize}
+
+Los histogramas para cada una de las variables de interes son los siguientes:
+
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.6\textwidth]{imagenes/theta1.jpg}
+  \caption{theta 1}
+\end{figure}
+
+Con media = 0.4975 y std = 0.0190
+
+\newpage 
+
+\begin{figure}[h]
+    \includegraphics[width=0.9\textwidth]{imagenes/theta2.jpg}
+  \caption{theta 2}
+\end{figure}
+
+Con media = 0.4981 y std = 0.0152
+
+~\\
+\begin{figure}[h]
+    \includegraphics[width=0.9\textwidth]{imagenes/theta3.jpg}
+  \caption{theta 3}
+\end{figure}
+
+Con media = 0.9131 y std = 0.0866
+
+\newpage
+
+Las diferencias y similitudes entre las posterior de cada moneda se pueden apreciar mejor en el siguiente gráfico conjunto:
+
+~\\
+\begin{figure}[h]
+    \includegraphics[width=0.4\textwidth]{imagenes/conjunta.jpg}
+  \caption{theta 1, 2, y 3}
+\end{figure}
+~\\
+
+Se puede ver que $\Theta_{1}$ y $\Theta_{2}$ están prácticamente solapados con media alrededor de $0.5$, mientras que $\Theta_{3}$, como resultó ser la moneda cargada, tiene una
+distribución con mucho peso en valores cercanos al $1$.	
+
+\newpage
+
+En cuanto a la variable categórica $C$, podemos observar su resultado en el siguiente gráfico:
+
+~\\
+\begin{figure}[h]
+    \includegraphics[width=0.8\textwidth]{imagenes/categorica.jpg}
+  \caption{categórica}
+\end{figure}
+~\\
+
+De donde se puede ver claramente que la probabilidad de que la tercera moneda sea la cargada es prácticamente $1$, mientras que la probabilidad de que las monedas 1 y 2 sean las
+cargadas es muy cercana a $0$.
+
+
+
+\newpage
+
+\section{Problema 3: Modificaciones al Modelo}
+
+\textbf{Discuta cómo modificaría el modelo si en lugar de saber que hay una moneda cargada, nos dicen que cada moneda puede estar cargada o no con probabilidad 1/2 independientemente
+de las otras monedas. Provea el modelo y su representación gráfica para este caso.}
+
+~\\
+La modificación que hay que realizarle al modelo es sencilla: la variable categórica $C$ se reemplaza por 3 variables bernoulli $C_{1}$, $C_{2}$ y $C_{3}$ con parámetro $1/2$ (una para cada $\Theta$),
+las cuales deciden para cada moneda si ésta va a estar cargada o no. La representación gráfica de este modelo se puede ver en la siguiente Figura:
+
+%IMAGEN
+\begin{minipage}[t]{\dimexpr\linewidth-5.5cm\relax}
+    \raggedleft\raisebox{\dimexpr 0.6\baselineskip-\height}{
+    \includegraphics[width=\textwidth]{imagenes/modelo2.jpg}}
+    \captionof{figure}{\texttt{modelo 2}}
+\end{minipage}\hfill
+%TEXTO AL LADO
+\begin{minipage}[t]{0.7\textwidth}
+  \begin{flushleft}
+  \large
+    ~\\
+    $\Psi \; {\raise.17ex\hbox{$\scriptstyle\sim$}} \; Beta(1000, 1000)$\vspace*{0.3cm} \\
+    $\Phi \; {\raise.17ex\hbox{$\scriptstyle\sim$}} \; Beta(1,1)$\vspace*{0.3cm} \\
+    $\Theta_{i} = \left\{
+	  \begin{array}{ll}
+		  \Phi  & \mbox{si } c = i \\
+		  \Psi & \mbox{si } c \neq i
+	  \end{array}
+    \right.$\vspace*{0.3cm} \\
+    $C \; {\raise.17ex\hbox{$\scriptstyle\sim$}} \; Bernoulli(1/2)$\vspace*{0.3cm} \\
+    $K_{i} \; {\raise.17ex\hbox{$\scriptstyle\sim$}} \; Binomial(n, \theta_{i})$  
+  \end{flushleft}  
+\end{minipage}
+
+~\\ \\
