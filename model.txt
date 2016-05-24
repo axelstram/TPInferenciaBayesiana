@@ -1,4 +1,3 @@
-# Difference Between Two Rates
 model{
    #m = cantidad de monedas
 

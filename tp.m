@@ -1,7 +1,7 @@
 %% TP
 
 clear;
-modelo = 2; %1 = primer model, 2 = modelo modificado
+modelo = 1; %1 = primer model, 2 = modelo modificado
 
 modelo_txt = '';
 
@@ -75,7 +75,7 @@ if modelo == 1
     %a = ordinal(c, {'moneda 1', 'moneda 2', 'moneda 3'});
     %histogram(a, 'Normalization', 'pdf');
 
-    % histogram(theta1, 'Normalization', 'pdf');
+    histogram(theta1, 'Normalization', 'pdf');
     % hold on
     % histogram(theta2, 'Normalization', 'pdf');
     % hold on

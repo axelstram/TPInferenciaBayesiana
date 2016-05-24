@@ -46,6 +46,27 @@ el resultado de la categórica $C$, que decide cuál de las 3 monedas es la carg
 
 
 \newpage
+El modelo en JAGS es el siguiente:
+\begin{verbatim}
+model{
+   #m = cantidad de monedas
+
+   for (i in 1:m) {
+   		p[i] = 1/3
+   }
+   #Priors
+   c ~ dcat(p[])
+   phi ~ dbeta(1,1) #cargada, pero no se como
+   psi ~ dbeta(1000,1000) #no cargada, quiero que este lo mas concentrado posible en 1/2
+
+   for (i in 1:m) {
+   		theta[i] <- equals(c[1], i)*phi + (1 - equals(c[1], i))*psi
+   		k[i] ~ dbin(theta[i], n)
+   }
+}
+\end{verbatim}
+
+\newpage
 \section{Problema 2: Implementación e Inferencia}
 
 \textbf{Implemente el modelo en su sistema de inferencia predilecto, y obtenga muestras de la posterior para las variables relevantes. Explicite cuáles fueron los parámetros
@@ -98,7 +119,7 @@ Con media = 0.9131 y std = 0.0866
 
 \newpage
 
-Las diferencias y similitudes entre las posterior de cada moneda se pueden apreciar mejor en el siguiente gráfico conjunto:
+Las diferencias y similitudes entre las posterior de los $\Theta$ de cada moneda se pueden apreciar mejor en el siguiente gráfico conjunto:
 
 ~\\
 \begin{figure}[h]
@@ -108,7 +129,7 @@ Las diferencias y similitudes entre las posterior de cada moneda se pueden aprec
 ~\\
 
 Se puede ver que $\Theta_{1}$ y $\Theta_{2}$ están prácticamente solapados con media alrededor de $0.5$, mientras que $\Theta_{3}$, como resultó ser la moneda cargada, tiene una
-distribución con mucho peso en valores cercanos al $1$.	
+distribución con mucho peso en valores cercanos al $1$, similar a una $Beta(1000,1)$.	
 
 \newpage
 
@@ -162,3 +183,31 @@ las cuales deciden para cada moneda si ésta va a estar cargada o no. La represe
 \end{minipage}
 
 ~\\ \\
+
+El modelo en JAGS es el siguiente:
+
+\begin{verbatim}
+model{
+   #m = cantidad de monedas
+
+   #Priors
+   for (i in 1:m) {
+   	   c[i] ~ dbern(0.5)
+   }
+   
+   phi ~ dbeta(1,1) #cargada, pero no se como
+   psi ~ dbeta(1000,1000) #no cargada, quiero que este lo mas concentrado posible en 1/2
+
+   for (i in 1:m) {
+   		theta[i] <- equals(c[i], 1)*phi + equals(c[i], 0)*psi
+   		k[i] ~ dbin(theta[i], n)
+   }
+}
+\end{verbatim}
+
+\newpage
+
+\section{Problema 4: Predicciones}
+
+\textbf{Escriba la expresión para la probabilidad de obtener cara en la próxima tirada para cada una de las monedas. 
+¿Qué distintas fuentes de incertidumbre puede identificar en ella?}
