@@ -1,6 +1,12 @@
 \section{Introducción}
 
-El objetivo de este Trabajo Práctico es simular
+El objetivo de este Trabajo Práctico es simular las tiradas de 3 monedas, de las cuales 1 está cargada (aunque se ignora cómo), y en base a un modelo ha construir y los datos de las tiradas que se realizaron,
+inferir cuál de las 3 monedas es la cargada, y qué tan cargada esta. A continuación el enunciado:
+
+~\\
+\textbf{Observamos 10 tiradas de 3 monedas distintas, de las que sabemos que hay dos monedas comunes y una cargada, aunque ignoramos cargada cómo. Los números de caras obtenidos para las distintas
+monedas en las 10 tiradas son 3, 4 y 10.}
+
 
 \section{Problema 1: Modelo y Representación Gráfica}
 
@@ -205,9 +211,176 @@ model{
 }
 \end{verbatim}
 
+~\\
 \newpage
+En este caso el histograma para las posterior de las variables $\Theta$ es:
+
+\begin{figure}[h]
+    \includegraphics[width=0.9\textwidth]{imagenes/conjunta-modelo2.jpg}
+  \caption{theta 1, 2, y 3}
+\end{figure}
+~\\
+
+Con las siguientes medias y desvíos estándar:
+
+~\\
+
+$\Theta_{1} = 0.4980, 0.0298$ (incremento del 1\% y 1.57\% en media y std con respecto al modelo anterior)
+
+$\Theta_{2} = 0.5002, 0.0321$ (incremento del 1\% y 2.11\% en media y std con respecto al modelo anterior)
+
+$\Theta_{3} = 0.8986, 0.1091$ (decremento del 1\% en media e incremento del 1.26\% en std con respecto al modelo anterior)
+
+
+~\\
+Y los diagramas para las posterior de las categóricas $C_{i}$ son los siguientes, en los cuales se puede 
+observar que la moneda 3 es la cargada.
+
+
+\begin{figure}[h!]
+  \centering{\includegraphics[width=0.5\textwidth]{imagenes/c1.jpg}}
+  \caption{c1}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering{\includegraphics[width=0.5\textwidth]{imagenes/c2.jpg}}
+  \caption{c2}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering{\includegraphics[width=0.5\textwidth]{imagenes/c3.jpg}}
+  \caption{c3}
+\end{figure}
+
+
+\clearpage
 
 \section{Problema 4: Predicciones}
 
 \textbf{Escriba la expresión para la probabilidad de obtener cara en la próxima tirada para cada una de las monedas. 
 ¿Qué distintas fuentes de incertidumbre puede identificar en ella?}
+
+La expresión para la probabilidad de obtener cara en la próxima tirada es la posterior predictive de la moneda, la cual tiene la siguiente forma:
+
+~\\
+{\Large
+${\displaystyle \int} P(cara | D,c) = {\displaystyle \int} P(cara, \Theta_{i} | D, c) \; d\Theta_{i} = {\displaystyle \int} P(cara | \Theta_{i}, D, c) \ P(\Theta_{i} | D, c) \; d\Theta_{i} =
+{\displaystyle \int} P(cara | \Theta_{i}) \ P(\Theta_{i} | D, c) \; d\Theta_{i} = {\displaystyle \int} P(cara | \Theta_{i}) \ [ P(\Phi | D) I(c = i) \ + \ P(\Psi | D) I(c \neq i)] \; d\Theta_{i} = 
+{\displaystyle \int} P(cara | \Theta_{i}) \ [ P(\Phi) I(c = i) \ + \ P(\Psi) I(c \neq i)] \; d\Theta_{i}$
+
+}
+
+~\\
+
+Una fuente de incertidumbre es el valor real de la categórica $C$, que determina cual de las 2 distribuciones voy a terminar usando para calcular la posterior predictive.
+
+\newpage
+\section{Apéndice: Código matlab}
+
+El código a continuación es todo el código utilizado en el tp:
+
+\begin{verbatim}
+%% TP
+
+clear;
+modelo = 2; %1 = primer model, 2 = modelo modificado
+
+modelo_txt = '';
+
+if modelo == 1
+    modelo_txt = 'model.txt';
+else
+    modelo_txt = 'model2.txt';
+end
+
+%% Data (Observed Variables)
+k = [3, 4, 10];
+n = 10;
+m = 3; %cantidad de monedas
+
+%% Sampling
+% MCMC Parameters
+nchains = 2; % How Many Chains?
+nburnin = 1e2; % How Many Burn-in Samples?
+nsamples = 5e3;  %How Many Recorded Samples?
+nthin = 2; % How Often is a Sample Recorded?
+doparallel = 0; % Parallel Option
+
+% Assign Matlab Variables to the Observed Nodes
+datastruct = struct('k', k, 'n', n, 'm', m);
+
+%Initialize Unobserved Variables
+for i=1:nchains
+    if modelo == 1
+        S.c = 1/3;
+    else
+        S.c = round(rand(1,m));
+    end
+        
+    init0(i) = S;
+end
+
+
+% Use JAGS to Sample
+tic
+fprintf( 'Running JAGS ...\n' );
+[samples, stats] = matjags( ...
+	datastruct, ...
+	fullfile(pwd, modelo_txt), ...
+	init0, ...
+	'doparallel' , doparallel, ...
+	'nchains', nchains,...
+	'nburnin', nburnin,...
+	'nsamples', nsamples, ...
+	'thin', nthin, ...
+	'monitorparams', {'c', 'theta'}, ...
+	'savejagsoutput' , 1 , ...
+	'verbosity' , 1 , ...
+	'cleanup' , 0 , ...
+	'workingdir' , 'tmpjags' );
+toc
+
+%Grafico los resultados
+
+theta1 = samples.theta(:,:,1);
+theta2 = samples.theta(:,:,2);
+theta3 = samples.theta(:,:,3);
+theta1 = theta1(:);
+theta2 = theta2(:);
+theta3 = theta3(:);
+
+if modelo == 1
+    c = samples.c();
+    c = c(:);
+
+    %a = ordinal(c, {'moneda 1', 'moneda 2', 'moneda 3'});
+    %histogram(a, 'Normalization', 'pdf');
+
+    %histogram(theta1, 'Normalization', 'pdf');
+    %hold on
+    %histogram(theta2, 'Normalization', 'pdf');
+    %hold on
+    %histogram(theta3, 'Normalization', 'pdf');
+else
+    c1 = samples.c(:,:,1);
+    c2 = samples.c(:,:,2);
+    c3 = samples.c(:,:,3);
+    c1 = c1(:);
+    c2 = c2(:);
+    c3 = c3(:);
+    
+    
+    %histogram(theta1, 'Normalization', 'pdf');
+    %hold on
+    %histogram(theta2, 'Normalization', 'pdf');
+    %hold on
+    %histogram(theta3, 'Normalization', 'pdf');
+    %histogram(c1, 'Normalization', 'pdf');
+    %histogram(c2, 'Normalization', 'pdf');
+    %histogram(c3, 'Normalization', 'pdf');
+end
+ 
+
+ 
+
+\end{verbatim}

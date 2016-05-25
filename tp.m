@@ -1,7 +1,7 @@
 %% TP
 
 clear;
-modelo = 1; %1 = primer model, 2 = modelo modificado
+modelo = 2; %1 = primer model, 2 = modelo modificado
 
 modelo_txt = '';
 
@@ -63,38 +63,39 @@ toc
 theta1 = samples.theta(:,:,1);
 theta2 = samples.theta(:,:,2);
 theta3 = samples.theta(:,:,3);
+theta1 = theta1(:);
+theta2 = theta2(:);
+theta3 = theta3(:);
 
 if modelo == 1
     c = samples.c();
-
-    theta1 = theta1(:);
-    theta2 = theta2(:);
-    theta3 = theta3(:);
     c = c(:);
 
     %a = ordinal(c, {'moneda 1', 'moneda 2', 'moneda 3'});
     %histogram(a, 'Normalization', 'pdf');
 
     histogram(theta1, 'Normalization', 'pdf');
-    % hold on
-    % histogram(theta2, 'Normalization', 'pdf');
-    % hold on
-    % histogram(theta3, 'Normalization', 'pdf');
+    hold on
+    histogram(theta2, 'Normalization', 'pdf');
+    hold on
+    histogram(theta3, 'Normalization', 'pdf');
 else
     c1 = samples.c(:,:,1);
     c2 = samples.c(:,:,2);
     c3 = samples.c(:,:,3);
-    
     c1 = c1(:);
     c2 = c2(:);
     c3 = c3(:);
+
     
-%    histogram(c1, 'Normalization', 'pdf');
-%     hold on
-%     histogram(c2, 'Normalization', 'pdf');
-%     hold on
-%     histogram(c3, 'Normalization', 'pdf');
-%     hold on
+    %histogram(theta1, 'Normalization', 'pdf');
+    %hold on
+    %histogram(theta2, 'Normalization', 'pdf');
+    %hold on
+    %histogram(theta3, 'Normalization', 'pdf');
+    %histogram(c1, 'Normalization', 'pdf');
+    %histogram(c2, 'Normalization', 'pdf');
+    %histogram(c3, 'Normalization', 'pdf');
 end
  
 
